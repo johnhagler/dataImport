@@ -16,10 +16,10 @@ def main():
 
     process = sys.argv[2]
 
-    if process == 'cvx':
+    if process == 'cvx' or 'all':
         cvx_codes.main(db_path)
     else:
-        print 'choose which data to import  [cvx]'
+        print 'choose which data to import  [cvx|all]'
 
 
 if __name__ == '__main__':
