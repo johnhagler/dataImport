@@ -13,5 +13,7 @@ class Db(object):
         self.conn.commit()
 
     def __del__(self):
+        self.conn.cursor().execute('vacuum')
+        self.conn.commit()
         print 'closing connection'
         self.conn.close()
