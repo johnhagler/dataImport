@@ -1,33 +1,42 @@
 import requests
 import db
+from datetime import datetime
 
 
 def init_db(conn):
 
-    sql = """
-    create table if not exists cvx_codes
-    (
-    code integer primary key,
-    short_description text,
-    full_vaccine_name text,
-    notes text,
-    status text,
-    non_vaccine text,
-    last_updated text
-    )
+    sql_drop = """
+    DROP TABLE cvx_codes
     """
-    conn.get_cursor().execute(sql)
+    print 'dropping table cvx_codes'
+    conn.get_cursor().execute(sql_drop)
+
+    sql_create = """
+    CREATE TABLE cvx_codes (
+    code              INTEGER PRIMARY KEY UNIQUE,
+    short_description TEXT,
+    full_vaccine_name TEXT,
+    notes             TEXT,
+    status            TEXT,
+    non_vaccine       TEXT,
+    last_updated      TEXT
+    );
+    """
+    print 'creating table cvx_codes'
+    conn.get_cursor().execute(sql_create)
 
     sql_index = """
     CREATE UNIQUE INDEX cvx_codes_PK ON cvx_codes (
     code
-    )
+    );
     """
+    print 'creating index cvx_codes_PK'
     conn.get_cursor().execute(sql_index)
     conn.commit()
 
 
 def print_record(record):
+    print '-----------------------------------------'
     print 'CVXCode ' + record[0].strip()
     print 'ShortDescription ' + record[1].strip()
     print 'FullVaccineName ' + record[2].strip()
@@ -35,10 +44,16 @@ def print_record(record):
     print 'Status ' + record[4].strip()
     print 'NonVaccine ' + record[5].strip()
     print 'LastUpdated ' + record[6].strip()
-    print '-----------------------------------------'
+
+
+def convert_date_format(value, from_format, to_format):
+    dt = datetime.strptime(value, from_format)
+    return dt.strftime(to_format)
 
 
 def insert_record(conn, record):
+
+    update_date = convert_date_format(record[6], '%Y/%m/%d', '%Y-%m-%d')
 
     values = \
         record[0].strip(), \
@@ -47,7 +62,7 @@ def insert_record(conn, record):
         record[3].strip(), \
         record[4].strip(), \
         record[5].strip(), \
-        record[6].strip()
+        update_date
 
     sql = 'insert into cvx_codes values (?,?,?,?,?,?,?)'
     try:
@@ -75,7 +90,3 @@ def main(db_path):
         if elements[0].strip().isnumeric():
             print_record(elements)
             insert_record(conn, elements)
-
-
-if __name__ == '__main__':
-    main()
