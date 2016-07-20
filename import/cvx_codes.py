@@ -1,6 +1,6 @@
 import requests
 import db
-from datetime import datetime
+import utils
 
 
 def init_db(conn):
@@ -46,14 +46,9 @@ def print_record(record):
     print 'LastUpdated ' + record[6].strip()
 
 
-def convert_date_format(value, from_format, to_format):
-    dt = datetime.strptime(value, from_format)
-    return dt.strftime(to_format)
-
-
 def insert_record(conn, record):
 
-    update_date = convert_date_format(record[6], '%Y/%m/%d', '%Y-%m-%d')
+    update_date = utils.convert_date_format(record[6], '%Y/%m/%d', '%Y-%m-%d')
 
     values = \
         record[0].strip(), \
