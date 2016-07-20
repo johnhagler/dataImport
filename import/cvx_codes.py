@@ -67,21 +67,41 @@ def insert_record(conn, record):
     conn.commit()
 
 
-def main(db_path):
-
-    conn = db.Db(db_path)
-
-    init_db(conn)
-
+def get_cvx_data():
     r = requests.get('http://www2a.cdc.gov/vaccines/iis/iisstandards/downloads/cvx.txt')
     r.encoding = r.apparent_encoding
     r.raise_for_status()
-    data = r.text
+    return r.text
 
+def parse_cvx_data(data):
+
+    parsed = []
     lines = data.strip().split('\r')
 
     for line in lines:
         elements = line.split('|')
         if elements[0].strip().isnumeric():
-            print_record(elements)
-            insert_record(conn, elements)
+            parsed.append(elements)
+
+    return parsed
+
+
+def write_to_db(db_path, records):
+    if records:
+        conn = db.Db(db_path)
+        init_db(conn)
+        for record in records:
+            insert_record(conn, record)
+            print_record(record)
+
+
+def main(db_path):
+
+    data = get_cvx_data()
+
+    records = parse_cvx_data(data)
+
+    write_to_db(db_path, records)
+
+
+
