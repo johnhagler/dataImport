@@ -31,6 +31,8 @@ CREATE TABLE encounters (
   patient_id integer,
   practice_id integer,
   timestamp text,
+  visit_type text,
+  cvx_code integer,
   FOREIGN KEY(patient_id) REFERENCES patients(patient_id),
   FOREIGN KEY(practice_id) REFERENCES practices(practice_id)
 );
@@ -55,3 +57,22 @@ CREATE TABLE cvx_codes (
 
 CREATE UNIQUE INDEX cvx_codes_PK ON cvx_codes(code);
 
+DROP VIEW IF EXISTS vaccines_given;
+
+CREATE VIEW vaccines_given AS
+    SELECT name AS practice,
+           timestamp,
+           p.patient_id,
+           first_name,
+           last_name,
+           gender,
+           date_of_birth,
+           short_description AS vaccine_name
+      FROM encounters AS e
+           LEFT OUTER JOIN
+           patients AS p ON e.patient_id = p.patient_id
+           LEFT OUTER JOIN
+           practices AS r ON e.practice_id = r.practice_id
+           LEFT OUTER JOIN
+           cvx_codes AS c ON cvx_code = code
+     WHERE visit_type = 'vaccine';
