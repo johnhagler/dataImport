@@ -1,38 +1,41 @@
 import requests
 import db
 import utils
+import pyprind
 
 
 def init_db(conn):
 
-    sql_drop = """
-    DROP TABLE cvx_codes
-    """
-    print 'dropping table cvx_codes'
-    conn.get_cursor().execute(sql_drop)
+    # sql_drop = """
+    # DROP TABLE IF EXISTS cvx_codes
+    # """
+    # print 'dropping table cvx_codes'
+    # conn.get_cursor().execute(sql_drop)
+    #
+    # sql_create = """
+    # CREATE TABLE cvx_codes (
+    # code              INTEGER PRIMARY KEY UNIQUE,
+    # short_description TEXT,
+    # full_vaccine_name TEXT,
+    # notes             TEXT,
+    # status            TEXT,
+    # non_vaccine       TEXT,
+    # last_updated      TEXT
+    # );
+    # """
+    # print 'creating table cvx_codes'
+    # conn.get_cursor().execute(sql_create)
+    #
+    # sql_index = """
+    # CREATE UNIQUE INDEX cvx_codes_PK ON cvx_codes (
+    # code
+    # );
+    # """
+    # print 'creating index cvx_codes_PK'
+    # conn.get_cursor().execute(sql_index)
+    # conn.commit()
 
-    sql_create = """
-    CREATE TABLE cvx_codes (
-    code              INTEGER PRIMARY KEY UNIQUE,
-    short_description TEXT,
-    full_vaccine_name TEXT,
-    notes             TEXT,
-    status            TEXT,
-    non_vaccine       TEXT,
-    last_updated      TEXT
-    );
-    """
-    print 'creating table cvx_codes'
-    conn.get_cursor().execute(sql_create)
-
-    sql_index = """
-    CREATE UNIQUE INDEX cvx_codes_PK ON cvx_codes (
-    code
-    );
-    """
-    print 'creating index cvx_codes_PK'
-    conn.get_cursor().execute(sql_index)
-    conn.commit()
+    conn.execute_file('db/schema.sql')
 
 
 def print_record(record):
@@ -73,6 +76,7 @@ def get_cvx_data():
     r.raise_for_status()
     return r.text
 
+
 def parse_cvx_data(data):
 
     parsed = []
@@ -90,9 +94,11 @@ def write_to_db(db_path, records):
     if records:
         conn = db.Db(db_path)
         init_db(conn)
-        for record in records:
+
+        print 'Inserting records into database'
+        for record in pyprind.prog_bar(records):
             insert_record(conn, record)
-            print_record(record)
+            #print_record(record)
 
 
 def main(db_path):
